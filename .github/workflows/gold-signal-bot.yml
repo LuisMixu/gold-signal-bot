@@ -2,16 +2,25 @@ name: Gold AI-Score Signal Bot
 
 on:
   schedule:
-    # 10 minutes after every 4h candle close (UTC): 00:10, 04:10, 08:10, 12:10, 16:10, 20:10
-    - cron: "10 0,4,8,12,16,20 * * *"
+    # 4h-Kerzen schliessen um 00/04/08/12/16/20 UTC. GitHub fuehrt geplante
+    # Workflows nur "best effort" aus und laesst in privaten Repos regelmaessig
+    # Laeufe komplett ausfallen. Deshalb mehrere Versuche direkt nach jedem
+    # Kerzenschluss statt nur einem einzigen. Zusaetzliche Laeufe kosten nichts,
+    # weil der Bot ohne neue Kerze nach wenigen Sekunden ohne Nachricht endet.
+    - cron: "4,11,21,35 0,4,8,12,16,20 * * *"
   workflow_dispatch: {}
 
 permissions:
   contents: write
 
+concurrency:
+  group: gold-signal-bot
+  cancel-in-progress: false
+
 jobs:
   run-bot:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
 
@@ -33,5 +42,19 @@ jobs:
           git config user.name "gold-signal-bot"
           git config user.email "actions@users.noreply.github.com"
           git add state.json
-          git diff --quiet --cached || git commit -m "Update bot state [skip ci]"
-          git push
+          if git diff --quiet --cached; then
+            echo "State unchanged, nothing to commit."
+            exit 0
+          fi
+          git commit -m "Update bot state [skip ci]"
+          for attempt in 1 2 3; do
+            if git push; then
+              echo "State pushed (attempt $attempt)."
+              exit 0
+            fi
+            echo "Push failed (attempt $attempt), syncing with remote..."
+            git pull --rebase --autostash || git rebase --abort || true
+            sleep 3
+          done
+          echo "::warning::Could not push updated state after 3 attempts."
+          exit 0
