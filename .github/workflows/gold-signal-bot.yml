@@ -3,11 +3,14 @@ name: Gold AI-Score Signal Bot
 on:
   schedule:
     # 4h-Kerzen schliessen um 00/04/08/12/16/20 UTC. GitHub fuehrt geplante
-    # Workflows nur "best effort" aus und laesst in privaten Repos regelmaessig
-    # Laeufe komplett ausfallen. Deshalb mehrere Versuche direkt nach jedem
-    # Kerzenschluss statt nur einem einzigen. Zusaetzliche Laeufe kosten nichts,
-    # weil der Bot ohne neue Kerze nach wenigen Sekunden ohne Nachricht endet.
-    - cron: "4,11,21,35 0,4,8,12,16,20 * * *"
+    # Workflows nur "best effort" aus und laesst regelmaessig Laeufe komplett
+    # ausfallen (gemessen: statt 24 Laeufen/Tag kamen nur 3-6 an).
+    #
+    # Dieses Repo ist oeffentlich -> GitHub Actions ist unbegrenzt kostenlos.
+    # Deshalb der dichteste erlaubte Takt (alle 5 Minuten = GitHubs Minimum).
+    # Zusaetzliche Laeufe kosten nichts, weil der Bot ohne neue Kerze nach
+    # wenigen Sekunden ohne Nachricht endet.
+    - cron: "*/5 * * * *"
   workflow_dispatch: {}
 
 permissions:
