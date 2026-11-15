@@ -1,11 +1,11 @@
 {
   "side": "short",
   "entry": 3880.32,
-  "sl": 3948.9083546566258,
+  "sl": 3880.32,
   "tp1": 3777.4374680150618,
   "tp2": 3674.5549360301234,
-  "tp1_filled": false,
+  "tp1_filled": true,
   "tp2_filled": false,
-  "bars_since_sl": 62,
-  "last_processed_ts": 1794672000000
+  "bars_since_sl": 63,
+  "last_processed_ts": 1794686400000
 }
